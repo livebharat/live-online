@@ -8,7 +8,6 @@ import AdminPanel from './components/AdminPanel';
 import AdUnit from './components/AdUnit';
 import JobDetail from './components/JobDetail';
 
-// Defined stateTabs constant to fix ReferenceError on line 137
 const stateTabs: (IndianState | 'All')[] = ['All', 'Uttar Pradesh', 'Bihar', 'Delhi', 'Rajasthan', 'MP', 'Haryana', 'Others'];
 
 const App: React.FC = () => {
@@ -47,8 +46,6 @@ const App: React.FC = () => {
     return matchesSearch && matchesState;
   });
 
-  const jobsToday = jobs.filter(j => j.postedDate === new Date().toISOString().split('T')[0]).length;
-
   const handleCategoryClick = (cat: Category) => {
     setSelectedCategory(cat);
     setView('category_view');
@@ -59,46 +56,29 @@ const App: React.FC = () => {
     if (view === 'category_view' && selectedCategory) {
       const catJobs = jobs.filter(j => j.category === selectedCategory);
       return (
-        <div className="space-y-6 animate-fadeIn">
-          <div className="bg-white p-8 rounded-3xl shadow-xl border-l-[12px] border-red-600">
-            <h2 className="text-3xl font-black text-blue-900 uppercase italic flex items-center gap-4">
-               <div className="bg-red-600 text-white p-3 rounded-xl shadow-lg">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-               </div>
-               {selectedCategory} Section
-            </h2>
-            <p className="text-gray-500 font-bold text-sm mt-3 uppercase tracking-[0.2em]">Browsing {catJobs.length} active updates</p>
+        <div className="space-y-6">
+          <div className="bg-white p-6 rounded-lg shadow border-t-8 border-red-600">
+            <h2 className="text-2xl font-black text-blue-900 uppercase">{selectedCategory} Update History</h2>
           </div>
-          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+          <div className="bg-white rounded-lg shadow overflow-hidden">
              <table className="w-full text-left">
-                <thead className="bg-blue-900 text-white uppercase text-xs font-black">
+                <thead className="bg-blue-900 text-white uppercase text-xs">
                   <tr>
-                    <th className="p-5">Update Details</th>
-                    <th className="p-5 hidden md:table-cell">Posting Date</th>
-                    <th className="p-5 text-center">Action</th>
+                    <th className="p-4">Post Name</th>
+                    <th className="p-4">Posted Date</th>
+                    <th className="p-4 text-center">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {catJobs.length > 0 ? catJobs.map(job => (
-                    <tr key={job.id} className="hover:bg-red-50/50 transition-colors group">
-                      <td className="p-5">
-                        <p className="font-black text-blue-900 uppercase text-base leading-tight group-hover:text-red-600 transition-colors">{job.title}</p>
-                        <p className="text-[11px] text-gray-400 font-bold uppercase mt-1.5 flex items-center gap-2">
-                           <span className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded">{job.department}</span>
-                           <span className="text-gray-300">|</span>
-                           <span>{job.state || 'All India'}</span>
-                        </p>
-                      </td>
-                      <td className="p-5 hidden md:table-cell">
-                        <span className="font-mono text-gray-400 text-sm">{job.postedDate}</span>
-                      </td>
-                      <td className="p-5 text-center">
-                        <button onClick={() => setSelectedJob(job)} className="bg-red-600 text-white px-6 py-2.5 rounded-xl font-black text-xs uppercase hover:bg-blue-900 transition-all shadow-md active:scale-95">Open Info</button>
+                <tbody className="divide-y">
+                  {catJobs.map(job => (
+                    <tr key={job.id} className="hover:bg-gray-50">
+                      <td className="p-4 font-bold text-blue-800 uppercase text-sm">{job.title}</td>
+                      <td className="p-4 text-xs font-bold text-gray-500">{job.postedDate}</td>
+                      <td className="p-4 text-center">
+                        <button onClick={() => setSelectedJob(job)} className="bg-red-600 text-white px-4 py-1.5 rounded font-black text-[10px] uppercase">Details</button>
                       </td>
                     </tr>
-                  )) : (
-                    <tr><td colSpan={3} className="p-32 text-center font-black text-gray-200 uppercase text-2xl tracking-tighter">No Recent Content</td></tr>
-                  )}
+                  ))}
                 </tbody>
              </table>
           </div>
@@ -108,203 +88,135 @@ const App: React.FC = () => {
 
     switch (view) {
       case 'admin': return <AdminPanel onUpdate={refreshData} />;
-      case 'about': return <div className="p-12 bg-white shadow-2xl rounded-[40px] border-t-8 border-indigo-600 max-w-4xl mx-auto"><h2 className="text-4xl font-black mb-8 uppercase text-indigo-950 italic">Who We Are</h2><div className="space-y-4 text-gray-600 font-medium text-lg"><p>Sarkari Portal AI is a technology-driven aggregator designed to eliminate the lag between government notifications and student awareness.</p><p>We use Gemini AI models to parse PDF notifications and extract critical data like fees, age limits, and important dates automatically.</p></div></div>;
       default:
         return (
-          <div className="flex flex-col lg:flex-row gap-8">
-            <aside className="shrink-0">
-              <AdUnit type="sidebar" publisherId={adSettings.publisherId} visible={adSettings.isEnabled && adSettings.sideAdsEnabled} />
-            </aside>
-
-            <div className="flex-1 space-y-10">
-              {/* Trending "Flash" Grid */}
-              <div className="bg-yellow-400 p-1 rounded-2xl shadow-xl">
-                 <div className="bg-white rounded-xl p-3 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                    {jobs.filter(j => j.isUrgent).slice(0, 6).map(job => (
-                      <button key={job.id} onClick={() => setSelectedJob(job)} className="group relative bg-red-50 border-2 border-red-600 p-3 rounded-lg text-center hover:bg-red-600 transition-all">
-                        <span className="absolute -top-2 -left-2 bg-yellow-400 text-red-700 text-[8px] font-black px-1.5 py-0.5 rounded-md border border-red-600 animate-bounce">FLASH</span>
-                        <p className="text-blue-900 font-black text-[10px] uppercase leading-tight group-hover:text-white transition-colors">{job.title}</p>
-                      </button>
-                    ))}
-                    {Array.from({ length: Math.max(0, 6 - jobs.filter(j => j.isUrgent).length) }).map((_, i) => (
-                      <div key={i} className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg h-[60px] flex items-center justify-center">
-                        <span className="text-[8px] font-black text-gray-300 uppercase">Upcoming Slot</span>
-                      </div>
-                    ))}
-                 </div>
-              </div>
-
-              {/* Enhanced State Navigation */}
-              <div className="relative group">
-                <div className="bg-blue-900 p-3 rounded-2xl flex gap-2 overflow-x-auto no-scrollbar shadow-2xl">
-                   {stateTabs.map(tab => (
-                     <button 
-                      key={tab} 
-                      onClick={() => setActiveStateTab(tab)}
-                      className={`px-6 py-3 rounded-xl text-[12px] font-black uppercase transition-all whitespace-nowrap border-b-4 ${activeStateTab === tab ? 'bg-white text-blue-900 border-yellow-500 shadow-lg -translate-y-1' : 'text-blue-200 border-blue-950 hover:text-white'}`}
-                     >
-                       {tab} {tab !== 'All' ? 'Jobs' : ''}
-                     </button>
-                   ))}
-                </div>
-              </div>
-
-              <JobGrid jobs={filteredJobs} onJobClick={(job) => setSelectedJob(job)} onCategoryViewAll={handleCategoryClick} />
-
-              <AdUnit type="rectangle" publisherId={adSettings.publisherId} visible={adSettings.isEnabled && adSettings.inlineAdsEnabled} />
-
-              {/* Sectional Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {[
-                    { title: 'Syllabus', cat: Category.SYLLABUS, color: 'border-green-600', head: 'bg-green-600' },
-                    { title: 'Admission', cat: Category.ADMISSION, color: 'border-orange-500', head: 'bg-orange-500' },
-                    { title: 'Results Archive', cat: Category.RESULT, color: 'border-purple-600', head: 'bg-purple-600' }
-                  ].map(({ title, cat, color, head }) => (
-                    <section key={cat} className={`bg-white border-2 ${color} rounded-2xl shadow-xl overflow-hidden flex flex-col min-h-[400px]`}>
-                      <div className={`${head} text-white p-4 font-black text-center uppercase tracking-widest text-xs flex justify-between items-center shadow-inner`}>
-                        {title}
-                        <button onClick={() => handleCategoryClick(cat)} className="bg-black/20 px-2 py-0.5 rounded hover:bg-black/40 text-[9px]">VIEW ALL</button>
-                      </div>
-                      <div className="p-4 space-y-3 flex-1 overflow-y-auto no-scrollbar bg-gray-50/30">
-                        {jobs.filter(j => j.category === cat).slice(0, 10).map(j => (
-                          <button key={j.id} onClick={() => setSelectedJob(j)} className="block w-full text-left text-blue-900 hover:text-red-600 text-[13px] border-b border-gray-100 pb-2.5 font-black uppercase transition-all group">
-                             <span className="text-gray-300 group-hover:text-red-600 transition-colors mr-1">●</span> {j.title}
-                          </button>
-                        ))}
-                      </div>
-                    </section>
-                  ))}
-              </div>
+          <div className="space-y-6">
+            {/* Quick Link Buttons (Sarkari Result Style) */}
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-1">
+               {['SSC GD', 'UP Police', 'RPF Const.', 'CTET 2024', 'Army Rally', 'Railway', 'UPSC', 'IBPS'].map(tag => (
+                 <button key={tag} className="bg-blue-900 text-white font-black text-[10px] py-3 rounded hover:bg-red-600 transition uppercase shadow-sm">{tag}</button>
+               ))}
             </div>
 
-            <aside className="shrink-0">
-              <AdUnit type="sidebar" publisherId={adSettings.publisherId} visible={adSettings.isEnabled && adSettings.sideAdsEnabled} />
-            </aside>
+            {/* Featured Box (Like the real site) */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+               {jobs.filter(j => j.isUrgent).slice(0, 8).map(job => (
+                 <button key={job.id} onClick={() => setSelectedJob(job)} className="bg-white border-2 border-red-600 p-3 text-center rounded hover:shadow-lg transition group">
+                   <p className="text-blue-900 font-black text-[11px] uppercase group-hover:text-red-600">{job.title}</p>
+                 </button>
+               ))}
+            </div>
+
+            <JobGrid jobs={filteredJobs} onJobClick={setSelectedJob} onCategoryViewAll={handleCategoryClick} />
+
+            {/* Other Sections (Syllabus, Answer Key) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+               {[Category.SYLLABUS, Category.ADMISSION, Category.ANSWER_KEY].map(cat => (
+                 <div key={cat} className="bg-white border-2 border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                    <div className="bg-gray-700 text-white p-2 text-center font-black text-xs uppercase">{cat}</div>
+                    <div className="p-2 space-y-2">
+                      {jobs.filter(j => j.category === cat).slice(0, 8).map(job => (
+                        <button key={job.id} onClick={() => setSelectedJob(job)} className="block w-full text-left text-blue-800 hover:text-red-600 text-[11px] font-bold border-b border-gray-50 pb-1.5 truncate">
+                           <span className="text-red-600 mr-1">»</span> {job.title}
+                        </button>
+                      ))}
+                    </div>
+                    <button onClick={() => handleCategoryClick(cat)} className="w-full py-2 bg-gray-100 text-[9px] font-black uppercase text-gray-500 hover:bg-gray-200">View All</button>
+                 </div>
+               ))}
+            </div>
           </div>
         );
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-[#f4f7f6] select-none text-gray-800">
+    <div className="min-h-screen bg-[#f1f1f1] flex flex-col font-sans text-gray-900">
       {selectedJob && <JobDetail job={selectedJob} onClose={() => setSelectedJob(null)} />}
 
-      {/* Top Utilities Bar */}
-      <div className="bg-blue-950 text-white text-[10px] font-black py-2 px-6 flex justify-between items-center z-[100] border-b border-white/5">
-         <div className="flex gap-6 items-center">
-            <span className="flex items-center gap-2">
-               <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.6)]"></span> 
-               SYSTEM: OPERATIONAL
-            </span>
-            <span className="hidden lg:inline text-blue-300 opacity-60 uppercase tracking-widest">Sarkari Portal AI v3.1 | Automated Indexing</span>
-         </div>
-         <div className="flex gap-6 items-center">
-            <div className="flex gap-2">
-               <span className="bg-blue-900 px-3 py-0.5 rounded-full text-blue-200">Total: {jobs.length}</span>
-               <span className="bg-red-600 px-3 py-0.5 rounded-full text-white">Today: {jobsToday}</span>
-            </div>
-            <span className="font-mono text-yellow-400">{currentTime.toLocaleTimeString('en-IN')}</span>
+      {/* Ticker */}
+      <div className="bg-blue-900 text-white flex overflow-hidden whitespace-nowrap py-2 border-b-2 border-yellow-400 text-xs font-black">
+         <div className="bg-red-600 px-4 py-1 italic shrink-0 z-10 animate-pulse">FLASH UPDATES:</div>
+         <div className="animate-marquee inline-block pl-4">
+            {jobs.slice(0, 10).map(j => (
+              <span key={j.id} className="mx-8 uppercase">● {j.title} ({j.category})</span>
+            ))}
          </div>
       </div>
-      
+
       {/* Main Header */}
-      <header className="bg-white shadow-[0_10px_30px_rgba(0,0,0,0.05)] sticky top-0 z-50 border-b-8 border-red-700">
-        <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="flex items-center gap-5 cursor-pointer group" onClick={() => {setView('home'); scrollToTop();}}>
-            <div className="bg-gradient-to-br from-red-600 to-red-800 p-5 rounded-3xl shadow-2xl transform group-hover:rotate-6 transition duration-500 relative overflow-hidden">
-                <span className="text-white text-5xl font-black italic drop-shadow-2xl">S</span>
-                <div className="absolute top-0 right-0 w-full h-full bg-white/10 -skew-x-12 translate-x-full group-hover:translate-x-0 transition-transform duration-700"></div>
-            </div>
-            <div>
-              <h1 className="text-4xl font-black text-red-600 tracking-tighter leading-none italic uppercase">SARKARI PORTAL</h1>
-              <p className="text-[12px] font-black text-blue-900 tracking-[0.4em] uppercase mt-1.5 opacity-80">India's Leading AI Job Engine</p>
-            </div>
-          </div>
-          
-          <div className="flex-1 max-w-2xl w-full">
-            <div className="relative group">
-              <input 
-                type="text" 
-                placeholder="Ex: SSC GD, Army, UP Result, CTET..." 
-                className="w-full pl-14 pr-6 py-4.5 border-2 border-gray-100 rounded-[2rem] focus:border-blue-900 focus:ring-4 focus:ring-blue-100 focus:outline-none transition-all shadow-inner bg-gray-50 focus:bg-white text-base font-black placeholder:text-gray-300" 
-                value={search} 
-                onChange={(e) => setSearch(e.target.value)} 
-              />
-              <svg className="w-7 h-7 absolute left-5 top-4.5 text-gray-300 group-focus-within:text-blue-900 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            </div>
+      <header className="bg-white shadow-md border-b-4 border-blue-900">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('home')}>
+             <div className="bg-red-600 text-white text-5xl font-black italic p-3 rounded-lg leading-none shadow-xl">S</div>
+             <div>
+               <h1 className="text-4xl font-black text-red-600 italic tracking-tighter leading-none">SARKARI PORTAL</h1>
+               <p className="text-[10px] font-black text-blue-900 uppercase tracking-widest mt-1">WWW.SARKARIPORTALAI.COM</p>
+             </div>
           </div>
 
-          <div className="flex gap-3">
-            <button onClick={() => setView('admin')} className="bg-blue-900 text-white px-10 py-4.5 rounded-2xl font-black text-[12px] uppercase tracking-widest hover:bg-red-600 transition-all shadow-xl active:scale-95 border-b-4 border-blue-950">
-              Admin Log
-            </button>
+          <div className="flex-1 max-w-lg w-full">
+            <input type="text" placeholder="Search Result, Admit Card, Jobs..." className="w-full px-5 py-3 border-2 border-blue-900 rounded-lg focus:outline-none font-bold text-sm bg-gray-50" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
+
+          <button onClick={() => setView(view === 'admin' ? 'home' : 'admin')} className="bg-blue-900 text-white px-8 py-3 rounded-lg font-black text-xs uppercase border-b-4 border-blue-950 hover:bg-red-600 transition">
+            Admin Login
+          </button>
         </div>
-        
-        {/* Navigation */}
-        <nav className="bg-blue-900 text-white overflow-x-auto no-scrollbar border-t border-white/10">
-          <div className="max-w-7xl mx-auto px-4 flex whitespace-nowrap">
-            <button onClick={() => {setView('home'); scrollToTop();}} className={`px-10 py-5 font-black text-[13px] hover:bg-red-600 transition-all border-r border-white/5 uppercase tracking-tighter ${view === 'home' ? 'bg-red-600' : ''}`}>DASHBOARD</button>
-            {[Category.LATEST_JOB, Category.RESULT, Category.ADMIT_CARD, Category.ANSWER_KEY, Category.SYLLABUS, Category.ADMISSION].map(item => (
-              <button key={item} onClick={() => handleCategoryClick(item)} className="px-10 py-5 font-black text-[13px] hover:bg-red-600 transition-all border-r border-white/5 last:border-0 uppercase tracking-tighter">{item}</button>
+
+        <nav className="bg-blue-950 text-white overflow-x-auto scrollbar-hide">
+          <div className="max-w-7xl mx-auto flex whitespace-nowrap">
+            <button onClick={() => setView('home')} className="px-6 py-4 font-black text-xs uppercase hover:bg-red-600 border-r border-white/5">Home</button>
+            {Object.values(Category).slice(0, 6).map(cat => (
+              <button key={cat} onClick={() => handleCategoryClick(cat)} className="px-6 py-4 font-black text-xs uppercase hover:bg-red-600 border-r border-white/5">{cat}</button>
             ))}
           </div>
         </nav>
       </header>
 
-      {view === 'home' && <JobTicker jobs={jobs} />}
-
-      <main className="flex-1 max-w-7xl w-full mx-auto p-6 md:p-10 relative min-h-[80vh] pb-32">
+      {/* Content Area */}
+      <main className="max-w-7xl mx-auto w-full p-4 flex-1">
         {renderContent()}
       </main>
 
-      <footer className="bg-blue-950 text-white py-32 border-t-[16px] border-red-700 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-20">
-          <div className="col-span-1 md:col-span-2 space-y-8">
-            <h4 className="text-6xl font-black text-red-600 italic tracking-tighter drop-shadow-xl">SARKARI PORTAL</h4>
-            <p className="text-blue-200 text-lg font-bold leading-relaxed max-w-lg opacity-80">Leveraging Artificial Intelligence to automate the delivery of government notification updates. Millions of students trust us for speed, accuracy, and ease of use.</p>
-            <div className="flex gap-4">
-               {['FB', 'TW', 'YT', 'IG'].map(s => (
-                 <div key={s} className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center font-black text-xs hover:bg-red-600 transition-colors cursor-pointer border border-white/10">{s}</div>
-               ))}
-            </div>
-          </div>
-          <div className="space-y-8">
-             <h5 className="font-black text-white uppercase text-xl border-l-8 border-red-600 pl-4">Portal Map</h5>
-             <ul className="text-sm text-blue-400 font-black space-y-5 uppercase tracking-widest">
-               <li onClick={() => setView('home')} className="hover:text-yellow-400 cursor-pointer transition">Real-time Results</li>
-               <li onClick={() => setView('home')} className="hover:text-yellow-400 cursor-pointer transition">E-Admit Cards</li>
-               <li onClick={() => setView('home')} className="hover:text-yellow-400 cursor-pointer transition">New Vacancies</li>
-               <li onClick={() => setView('home')} className="hover:text-yellow-400 cursor-pointer transition">Answer Keys</li>
-             </ul>
-          </div>
-          <div className="space-y-8">
-             <h5 className="font-black text-white uppercase text-xl border-l-8 border-red-600 pl-4">Support Hub</h5>
-             <ul className="text-sm text-blue-400 font-black space-y-5 uppercase tracking-widest">
-               <li onClick={() => setView('about')} className="hover:text-yellow-400 cursor-pointer transition">Company Info</li>
-               <li onClick={() => setView('contact')} className="hover:text-yellow-400 cursor-pointer transition">Contact Desk</li>
-               <li className="hover:text-yellow-400 cursor-pointer transition">Privacy Policy</li>
-               <li className="hover:text-yellow-400 cursor-pointer transition">Disclaimer</li>
-             </ul>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto mt-24 px-6">
-           <div className="bg-red-900/20 p-10 rounded-[3rem] border border-red-900/50">
-              <h6 className="text-yellow-400 font-black mb-3 uppercase tracking-widest">AI Safety Notice</h6>
-              <p className="text-xs text-blue-100/60 leading-relaxed font-bold">This portal is an independent aggregator. While our AI models (Gemini Flash) strive for perfect data extraction, we strongly advise all users to verify details against official PDF notifications and government websites. We are not a government agency.</p>
+      {/* Sticky Social Icons */}
+      <div className="fixed bottom-10 left-5 flex flex-col gap-3 z-50">
+         <a href="#" className="bg-green-600 text-white p-3 rounded-full shadow-2xl hover:scale-110 transition animate-bounce">
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+         </a>
+      </div>
+
+      <footer className="bg-blue-900 text-white py-12 border-t-8 border-red-600">
+        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
+           <div>
+              <h4 className="text-2xl font-black italic text-red-500">SARKARI PORTAL AI</h4>
+              <p className="text-xs font-bold text-gray-300 mt-2 leading-relaxed">India's Leading automated portal for all latest jobs, admit card and results information.</p>
            </div>
-        </div>
-        <div className="text-center mt-20 pt-10 border-t border-white/5 text-[12px] text-blue-700 uppercase font-black tracking-[0.8em]">
-          Copyright © 2024-25 - WWW.SARKARIPORTALAI.COM - THE AI ADVANTAGE
+           <div className="text-center">
+              <h5 className="font-black uppercase text-sm mb-4">Quick Links</h5>
+              <div className="flex flex-wrap justify-center gap-4 text-[10px] font-bold">
+                 <span>Home</span><span>About Us</span><span>Contact Us</span><span>Privacy Policy</span>
+              </div>
+           </div>
+           <div className="text-right">
+              <p className="text-[10px] font-black text-gray-400">© 2024 WWW.SARKARIPORTALAI.COM</p>
+              <p className="text-[9px] text-gray-500 mt-1 uppercase italic">Powered by Gemini Flash AI</p>
+           </div>
         </div>
       </footer>
       
-      {showScrollTop && (
-        <button onClick={scrollToTop} className="fixed bottom-10 right-10 bg-red-600 text-white w-16 h-16 rounded-[1.5rem] shadow-2xl flex items-center justify-center hover:bg-blue-900 transition-all z-[100] border-4 border-white animate-pulse">
-           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 15l7-7 7 7"/></svg>
-        </button>
-      )}
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+          animation: marquee 30s linear infinite;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 };
