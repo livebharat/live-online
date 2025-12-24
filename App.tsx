@@ -57,28 +57,36 @@ const App: React.FC = () => {
       const catJobs = jobs.filter(j => j.category === selectedCategory);
       return (
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-lg shadow border-t-8 border-red-600">
-            <h2 className="text-2xl font-black text-blue-900 uppercase">{selectedCategory} Update History</h2>
+          <div className="bg-white p-6 rounded-lg shadow-xl border-t-[10px] border-red-600">
+            <h2 className="text-3xl font-black text-blue-900 uppercase italic">{selectedCategory} Section</h2>
+            <p className="text-gray-400 font-bold text-xs mt-2 uppercase tracking-widest">Displaying latest {selectedCategory} notifications</p>
           </div>
-          <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
              <table className="w-full text-left">
-                <thead className="bg-blue-900 text-white uppercase text-xs">
+                <thead className="bg-blue-900 text-white uppercase text-xs font-black">
                   <tr>
-                    <th className="p-4">Post Name</th>
-                    <th className="p-4">Posted Date</th>
-                    <th className="p-4 text-center">Action</th>
+                    <th className="p-5">Post Description</th>
+                    <th className="p-5 hidden md:table-cell">Posting Date</th>
+                    <th className="p-5 text-center">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y">
-                  {catJobs.map(job => (
-                    <tr key={job.id} className="hover:bg-gray-50">
-                      <td className="p-4 font-bold text-blue-800 uppercase text-sm">{job.title}</td>
-                      <td className="p-4 text-xs font-bold text-gray-500">{job.postedDate}</td>
-                      <td className="p-4 text-center">
-                        <button onClick={() => setSelectedJob(job)} className="bg-red-600 text-white px-4 py-1.5 rounded font-black text-[10px] uppercase">Details</button>
+                <tbody className="divide-y divide-gray-100">
+                  {catJobs.length > 0 ? catJobs.map(job => (
+                    <tr key={job.id} className="hover:bg-blue-50 transition-colors cursor-pointer group" onClick={() => setSelectedJob(job)}>
+                      <td className="p-5">
+                        <p className="font-black text-blue-800 uppercase text-sm group-hover:text-red-600">{job.title}</p>
+                        <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase">{job.department}</p>
+                      </td>
+                      <td className="p-5 hidden md:table-cell">
+                        <span className="bg-gray-100 text-gray-500 text-[10px] px-2 py-1 rounded font-black">{job.postedDate}</span>
+                      </td>
+                      <td className="p-5 text-center">
+                        <span className="bg-red-600 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase shadow-md">Open</span>
                       </td>
                     </tr>
-                  ))}
+                  )) : (
+                    <tr><td colSpan={3} className="p-20 text-center font-black text-gray-300 uppercase">No updates available in this section</td></tr>
+                  )}
                 </tbody>
              </table>
           </div>
@@ -90,38 +98,75 @@ const App: React.FC = () => {
       case 'admin': return <AdminPanel onUpdate={refreshData} />;
       default:
         return (
-          <div className="space-y-6">
-            {/* Quick Link Buttons (Sarkari Result Style) */}
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-1">
-               {['SSC GD', 'UP Police', 'RPF Const.', 'CTET 2024', 'Army Rally', 'Railway', 'UPSC', 'IBPS'].map(tag => (
-                 <button key={tag} className="bg-blue-900 text-white font-black text-[10px] py-3 rounded hover:bg-red-600 transition uppercase shadow-sm">{tag}</button>
-               ))}
-            </div>
-
-            {/* Featured Box (Like the real site) */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-               {jobs.filter(j => j.isUrgent).slice(0, 8).map(job => (
-                 <button key={job.id} onClick={() => setSelectedJob(job)} className="bg-white border-2 border-red-600 p-3 text-center rounded hover:shadow-lg transition group">
-                   <p className="text-blue-900 font-black text-[11px] uppercase group-hover:text-red-600">{job.title}</p>
+          <div className="space-y-8">
+            {/* Iconic 8-Box Header (The real Sarkari Result look) */}
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-2">
+               {[
+                 { name: 'UP Police Cons.', color: 'bg-[#FF5722]' },
+                 { name: 'SSC GD 2024', color: 'bg-[#2196F3]' },
+                 { name: 'RPF Constable', color: 'bg-[#4CAF50]' },
+                 { name: 'CTET Jan 2024', color: 'bg-[#9C27B0]' },
+                 { name: 'Army Agniveer', color: 'bg-[#3F51B5]' },
+                 { name: 'BPSC 70th Pre', color: 'bg-[#E91E63]' },
+                 { name: 'Railway ALP', color: 'bg-[#009688]' },
+                 { name: 'UPSC CSE 2024', color: 'bg-[#795548]' }
+               ].map((box, i) => (
+                 <button key={i} className={`${box.color} text-white font-black text-[11px] md:text-[13px] py-6 rounded-lg shadow-lg hover:scale-[1.02] transition-transform uppercase border-b-4 border-black/20 italic tracking-tighter`}>
+                   {box.name}
                  </button>
                ))}
             </div>
 
+            {/* Quick State Navigation */}
+            <div className="bg-white p-2 rounded-xl shadow-md border-2 border-blue-900 flex gap-1 overflow-x-auto no-scrollbar">
+               {stateTabs.map(tab => (
+                 <button 
+                  key={tab} 
+                  onClick={() => setActiveStateTab(tab)}
+                  className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase transition-all whitespace-nowrap ${activeStateTab === tab ? 'bg-red-600 text-white shadow-lg' : 'text-blue-900 hover:bg-gray-100'}`}
+                 >
+                   {tab} Jobs
+                 </button>
+               ))}
+            </div>
+
+            {/* Featured Selection Box */}
+            <div className="bg-white border-2 border-red-600 rounded-xl overflow-hidden shadow-xl">
+               <div className="bg-red-600 text-white p-2 text-center font-black uppercase text-xs tracking-widest italic animate-pulse">
+                  Hot New Vacancies / Results / Admit Cards
+               </div>
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-0 divide-y md:divide-y-0 md:divide-x border-b">
+                  {jobs.filter(j => j.isUrgent).slice(0, 6).map(job => (
+                    <button key={job.id} onClick={() => setSelectedJob(job)} className="p-4 hover:bg-blue-50 transition group flex items-center justify-between">
+                       <p className="text-blue-900 font-black text-[12px] uppercase group-hover:text-red-600 truncate">{job.title}</p>
+                       <span className="text-red-600 text-[10px] font-black">»</span>
+                    </button>
+                  ))}
+               </div>
+            </div>
+
+            {/* Main 3-Column Table Grid */}
             <JobGrid jobs={filteredJobs} onJobClick={setSelectedJob} onCategoryViewAll={handleCategoryClick} />
 
-            {/* Other Sections (Syllabus, Answer Key) */}
+            {/* Lower Info Grid (Syllabus, etc.) */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-               {[Category.SYLLABUS, Category.ADMISSION, Category.ANSWER_KEY].map(cat => (
-                 <div key={cat} className="bg-white border-2 border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                    <div className="bg-gray-700 text-white p-2 text-center font-black text-xs uppercase">{cat}</div>
-                    <div className="p-2 space-y-2">
-                      {jobs.filter(j => j.category === cat).slice(0, 8).map(job => (
-                        <button key={job.id} onClick={() => setSelectedJob(job)} className="block w-full text-left text-blue-800 hover:text-red-600 text-[11px] font-bold border-b border-gray-50 pb-1.5 truncate">
-                           <span className="text-red-600 mr-1">»</span> {job.title}
+               {[
+                 { cat: Category.SYLLABUS, head: 'bg-[#333]', border: 'border-gray-800' },
+                 { cat: Category.ADMISSION, head: 'bg-[#FF9800]', border: 'border-orange-600' },
+                 { cat: Category.ANSWER_KEY, head: 'bg-[#8BC34A]', border: 'border-green-600' }
+               ].map(item => (
+                 <div key={item.cat} className={`bg-white border-2 ${item.border} rounded-lg shadow-lg flex flex-col min-h-[400px]`}>
+                    <div className={`${item.head} text-white p-3 text-center font-black uppercase text-xs flex justify-between px-5 items-center`}>
+                       {item.cat}
+                       <button onClick={() => handleCategoryClick(item.cat)} className="text-[8px] border border-white/30 px-2 py-0.5 rounded hover:bg-white/10 transition">ALL</button>
+                    </div>
+                    <div className="p-3 space-y-3 flex-1 overflow-y-auto no-scrollbar">
+                      {jobs.filter(j => j.category === item.cat).slice(0, 10).map(job => (
+                        <button key={job.id} onClick={() => setSelectedJob(job)} className="block w-full text-left text-blue-800 hover:text-red-600 text-[12px] font-black border-b border-gray-50 pb-2 truncate">
+                           <span className="text-red-600 font-bold mr-1">●</span> {job.title}
                         </button>
                       ))}
                     </div>
-                    <button onClick={() => handleCategoryClick(cat)} className="w-full py-2 bg-gray-100 text-[9px] font-black uppercase text-gray-500 hover:bg-gray-200">View All</button>
                  </div>
                ))}
             </div>
@@ -131,92 +176,99 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f1f1f1] flex flex-col font-sans text-gray-900">
+    <div className="min-h-screen bg-[#F0F2F5] flex flex-col font-sans select-none">
       {selectedJob && <JobDetail job={selectedJob} onClose={() => setSelectedJob(null)} />}
 
-      {/* Ticker */}
-      <div className="bg-blue-900 text-white flex overflow-hidden whitespace-nowrap py-2 border-b-2 border-yellow-400 text-xs font-black">
-         <div className="bg-red-600 px-4 py-1 italic shrink-0 z-10 animate-pulse">FLASH UPDATES:</div>
-         <div className="animate-marquee inline-block pl-4">
-            {jobs.slice(0, 10).map(j => (
-              <span key={j.id} className="mx-8 uppercase">● {j.title} ({j.category})</span>
-            ))}
-         </div>
-      </div>
+      {/* Top Professional Ticker */}
+      <JobTicker jobs={jobs} />
 
-      {/* Main Header */}
-      <header className="bg-white shadow-md border-b-4 border-blue-900">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('home')}>
-             <div className="bg-red-600 text-white text-5xl font-black italic p-3 rounded-lg leading-none shadow-xl">S</div>
+      {/* Header with Logo and Search */}
+      <header className="bg-white shadow-lg border-b-[6px] border-blue-900 sticky top-0 z-[100]">
+        <div className="max-w-7xl mx-auto px-4 py-5 flex flex-col lg:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4 cursor-pointer group" onClick={() => {setView('home'); scrollToTop();}}>
+             <div className="bg-red-600 text-white text-5xl font-black italic p-4 rounded-2xl shadow-2xl transform group-hover:rotate-3 transition duration-300">S</div>
              <div>
-               <h1 className="text-4xl font-black text-red-600 italic tracking-tighter leading-none">SARKARI PORTAL</h1>
-               <p className="text-[10px] font-black text-blue-900 uppercase tracking-widest mt-1">WWW.SARKARIPORTALAI.COM</p>
+               <h1 className="text-4xl font-black text-red-600 italic tracking-tighter leading-none uppercase">SARKARI PORTAL</h1>
+               <p className="text-[11px] font-black text-blue-900 uppercase tracking-[0.3em] mt-1 opacity-70">India's Smartest Job Engine</p>
              </div>
           </div>
 
-          <div className="flex-1 max-w-lg w-full">
-            <input type="text" placeholder="Search Result, Admit Card, Jobs..." className="w-full px-5 py-3 border-2 border-blue-900 rounded-lg focus:outline-none font-bold text-sm bg-gray-50" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <div className="flex-1 max-w-xl w-full">
+            <div className="relative">
+              <input 
+                type="text" 
+                placeholder="Find Result, Admit Card, Latest Jobs..." 
+                className="w-full pl-12 pr-4 py-4 border-2 border-gray-100 rounded-2xl focus:border-red-600 focus:outline-none transition-all shadow-inner bg-gray-50 font-black text-sm" 
+                value={search} 
+                onChange={(e) => setSearch(e.target.value)} 
+              />
+              <svg className="w-6 h-6 absolute left-4 top-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
           </div>
 
-          <button onClick={() => setView(view === 'admin' ? 'home' : 'admin')} className="bg-blue-900 text-white px-8 py-3 rounded-lg font-black text-xs uppercase border-b-4 border-blue-950 hover:bg-red-600 transition">
-            Admin Login
-          </button>
+          <div className="flex gap-2">
+            <button onClick={() => setView(view === 'admin' ? 'home' : 'admin')} className="bg-blue-900 text-white px-8 py-4 rounded-xl font-black text-xs uppercase shadow-xl hover:bg-red-600 transition border-b-4 border-black/20">
+              Admin Access
+            </button>
+          </div>
         </div>
 
-        <nav className="bg-blue-950 text-white overflow-x-auto scrollbar-hide">
+        {/* Professional Navigation Bar */}
+        <nav className="bg-blue-950 text-white border-t border-white/5 overflow-x-auto no-scrollbar">
           <div className="max-w-7xl mx-auto flex whitespace-nowrap">
-            <button onClick={() => setView('home')} className="px-6 py-4 font-black text-xs uppercase hover:bg-red-600 border-r border-white/5">Home</button>
-            {Object.values(Category).slice(0, 6).map(cat => (
-              <button key={cat} onClick={() => handleCategoryClick(cat)} className="px-6 py-4 font-black text-xs uppercase hover:bg-red-600 border-r border-white/5">{cat}</button>
+            <button onClick={() => {setView('home'); scrollToTop();}} className={`px-10 py-5 font-black text-[12px] hover:bg-red-600 transition-all uppercase border-r border-white/5 ${view === 'home' ? 'bg-red-600' : ''}`}>Dashboard</button>
+            {[Category.LATEST_JOB, Category.RESULT, Category.ADMIT_CARD, Category.ANSWER_KEY, Category.SYLLABUS, Category.ADMISSION].map(cat => (
+              <button key={cat} onClick={() => handleCategoryClick(cat)} className="px-10 py-5 font-black text-[12px] hover:bg-red-600 transition-all uppercase border-r border-white/5">{cat}</button>
             ))}
           </div>
         </nav>
       </header>
 
-      {/* Content Area */}
-      <main className="max-w-7xl mx-auto w-full p-4 flex-1">
+      {/* Main Content Area */}
+      <main className="max-w-7xl mx-auto w-full p-4 md:p-8 flex-1 pb-24">
         {renderContent()}
       </main>
 
-      {/* Sticky Social Icons */}
-      <div className="fixed bottom-10 left-5 flex flex-col gap-3 z-50">
-         <a href="#" className="bg-green-600 text-white p-3 rounded-full shadow-2xl hover:scale-110 transition animate-bounce">
-            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-         </a>
-      </div>
-
-      <footer className="bg-blue-900 text-white py-12 border-t-8 border-red-600">
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
-           <div>
-              <h4 className="text-2xl font-black italic text-red-500">SARKARI PORTAL AI</h4>
-              <p className="text-xs font-bold text-gray-300 mt-2 leading-relaxed">India's Leading automated portal for all latest jobs, admit card and results information.</p>
+      {/* Footer Design */}
+      <footer className="bg-blue-950 text-white py-20 border-t-[14px] border-red-600">
+        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-16">
+           <div className="space-y-6">
+              <h4 className="text-4xl font-black italic text-red-600 tracking-tighter uppercase">SARKARI PORTAL AI</h4>
+              <p className="text-blue-100 font-bold text-sm leading-relaxed opacity-60">Leveraging AI to bring the fastest government job notifications to every student in India. Fast, Accurate, and Independent.</p>
            </div>
-           <div className="text-center">
-              <h5 className="font-black uppercase text-sm mb-4">Quick Links</h5>
-              <div className="flex flex-wrap justify-center gap-4 text-[10px] font-bold">
-                 <span>Home</span><span>About Us</span><span>Contact Us</span><span>Privacy Policy</span>
+           <div className="grid grid-cols-2 gap-8">
+              <div>
+                 <h5 className="font-black text-white uppercase text-base mb-6 border-b-2 border-red-600 inline-block pb-1">Quick Tabs</h5>
+                 <ul className="text-blue-400 font-black text-xs space-y-4 uppercase tracking-widest">
+                    <li className="hover:text-yellow-400 cursor-pointer transition">Home</li>
+                    <li className="hover:text-yellow-400 cursor-pointer transition">About Us</li>
+                    <li className="hover:text-yellow-400 cursor-pointer transition">Contact</li>
+                 </ul>
+              </div>
+              <div>
+                 <h5 className="font-black text-white uppercase text-base mb-6 border-b-2 border-red-600 inline-block pb-1">Policies</h5>
+                 <ul className="text-blue-400 font-black text-xs space-y-4 uppercase tracking-widest">
+                    <li className="hover:text-yellow-400 cursor-pointer transition">Privacy</li>
+                    <li className="hover:text-yellow-400 cursor-pointer transition">Disclaimer</li>
+                 </ul>
               </div>
            </div>
-           <div className="text-right">
-              <p className="text-[10px] font-black text-gray-400">© 2024 WWW.SARKARIPORTALAI.COM</p>
-              <p className="text-[9px] text-gray-500 mt-1 uppercase italic">Powered by Gemini Flash AI</p>
+           <div className="bg-blue-900/50 p-8 rounded-3xl border border-white/10 text-center">
+              <p className="text-[10px] text-blue-200 font-bold leading-relaxed uppercase opacity-50 mb-4">Official Verification Mandatory</p>
+              <p className="text-[11px] font-black text-white italic">Verify details on official govt websites before applying. We are an aggregator, not a recruitment agency.</p>
            </div>
+        </div>
+        <div className="text-center mt-16 pt-10 border-t border-white/5 text-[11px] text-blue-700 font-black uppercase tracking-[0.8em]">
+          Copyright © 2024 - WWW.SARKARIPORTALAI.COM
         </div>
       </footer>
       
-      <style>{`
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .animate-marquee {
-          animation: marquee 30s linear infinite;
-        }
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
+      {/* Floating Scroll Top */}
+      {showScrollTop && (
+        <button onClick={scrollToTop} className="fixed bottom-8 right-8 bg-red-600 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center hover:bg-blue-900 transition-all z-[150] border-4 border-white animate-bounce">
+           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 15l7-7 7 7"/></svg>
+        </button>
+      )}
     </div>
   );
 };
